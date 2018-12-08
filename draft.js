@@ -54,7 +54,8 @@ function getTypeAriaLabel(story) {
 function getStoryHeaderText(story) {
   let headers = story.getElementsByTagName("h5");
   if (headers.length == 0) {
-    console.log("WARNING: no headers found for story " + story);
+    // I believe this can happen for the "comment on this" stories
+    //console.log("WARNING: no headers found for story " + story);
     return "";
   }
   if (headers.length > 1) {
@@ -103,7 +104,7 @@ function getStories() {
 
 //TODO still need to handle
 // ads
-// "added 2 comments on this." / "commented on this." / "replied to a comment"
+// "added 2 comments on this." / "commented on this." / "replied to a comment" / "was tagged in this"
 // page shares
 
 function colorStories() {
@@ -138,3 +139,16 @@ function hideNonOriginalStories() {
     }
   }
 }
+
+function getNewsFeed() {
+  for (let d of document.getElementsByTagName("div")) {
+    if (d.id && d.id.startsWith("feed_stream_")) {
+      return d;
+    }
+  }
+}
+
+var observer = new MutationObserver(hideNonOriginalStories);
+observer.observe(getNewsFeed(), { attributes: false, childList: true, subtree: true });
+
+hideNonOriginalStories()

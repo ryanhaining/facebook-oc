@@ -1,56 +1,3 @@
-/*
-// NOPE
-let stream = document.getElementById("stream_pagelet");
-// can't loop over children with for each, need to use index
-
-// NOPE
-function getChildByIdPrefix(element, prefix) {
-  for (let i = 0; i < element.children.length; ++i) {
-    if (element.children[i].id.startsWith(prefix)) {
-      return element.children[i];
-    }
-  }
-  console.log("could not find child with prefix " + prefix); 
-}
-
-// NOPE
-let firstStory = document.getElementById("substream_0")
-
-// NOPE
-let newsFeed = getChildByIdPrefix(getChildByIdPrefix(getChildByIdPrefix(document.getElementById("stream_pagelet"), "topnews_main_stream_"), "feed_stream_").children[1], "more_pager_pagelet_").children[0].children[0].children[0].children[0].children[0]
-
-
-// hm, they all seem to have an id of "hyperfeed_story_id_", maybe I can just search for those instead
-
-
-// within each story the content is children [0][0][2]
-// 0, 1, 0, 0, 1, 1, 0, 0, 1 (lowest div before h5)
-// group -> 1 aria-label "Members of" = group
-// share/oc -> aria-label "Shared With:"
-//
-function descendChildren(element, indexes) {
-  for (let i of indexes) {
-    element = element.children[i];
-  }
-  return element;
-}
-
-function getStoryContent(story) {
-  // only  a two differs                       v             
-  //return descendChildren(story, [0, 0, 2, 0, 2, 0, 0, 1, 1, 0, 0, 1]);
-  return descendChildren(story, [0, 0, 2, 0, 1, 0, 0, 1, 1, 0, 0, 1]);
-}
-
-function getTypeAriaLabel(story) {
-  return descendChildren(getStoryContent(story), [1, 4]).getAttribute("aria-label");
-
-}
-
-*/
-
-
-// ***************************************************************
-
 function getStoryHeaderText(story) {
   let headers = story.getElementsByTagName("h5");
   if (headers.length == 0) {
@@ -104,7 +51,7 @@ function getStories() {
 
 //TODO still need to handle
 // ads
-// "added 2 comments on this." / "commented on this." / "replied to a comment" / "was tagged in this"
+// "added X comments on this." / "commented on this." / "replied to a comment" / "was tagged in this"
 // page shares
 
 function colorStories() {

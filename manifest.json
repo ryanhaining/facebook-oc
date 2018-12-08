@@ -1,7 +1,7 @@
 {
   "name": "Facebook OC",
   "version": "0.1.0",
-  "description": "Facebook Original Content filter - filter out the shares, see your friends' original posts",
+  "description": "Unofficial Facebook Original Content filter - filter out the shares, see your friends' original posts",
   "content_scripts": [{
     "css": [],
     "js": ["filter_content.js"],

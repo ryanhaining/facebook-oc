@@ -1,31 +1,45 @@
-function getStoryHeaderText(story) {
+function getStoryHeader(story) {
   let headers = story.getElementsByTagName("h5");
   if (headers.length == 0) {
     // I believe this can happen for the "comment on this" stories
     //console.log("WARNING: no headers found for story " + story);
-    return "";
+    return null;
   }
   if (headers.length > 1) {
-    console.log("WARNING: more than one header for story, taking first one. " +
-      "story: " + story);
+    console.log("WARNING: more than one header for story, taking first one. story: ");
+    console.log(story);
   }
-  return headers[0].textContent;
+  return headers[0];
 }
 
-function getTypeAriaLabel(story) {
-  for (let e of story.getElementsByTagName("div")) {
-    let ariaLabel = e.getAttribute("aria-label");
-    if (ariaLabel && !ariaLabel.startsWith("Comment")) {
-      return ariaLabel;
-    }
+function getStoryHeaderText(story) {
+  let header = getStoryHeader(story);
+  return header ? header.textContent : "";
+}
+
+function headerHasGroupArrow(story) {
+  // the arrow is inside an <i>
+  let header = getStoryHeader(story)
+  if (header == null) {
+    return false;
   }
+  let is  = header.getElementsByTagName("i");
+  if (is.length == 0) {
+    return false;
+  }
+  if (is.length != 1) {
+    console.log("ERROR: Bad assumption about <i> tag");
+  }
+  return is[0].innerText == "to";
+}
+
+function headerTextHasToGroup(story) {
+  return getStoryHeaderText(story).includes(" to the group: ");
 }
 
 function isGroupPost(story) {
-  // TODO I don't think this will get posts in groups that have
-  // public content
-  let ariaLabel = getTypeAriaLabel(story);
-  return ariaLabel ? ariaLabel.startsWith("Members of") : false;
+  return headerHasGroupArrow(story) || headerTextHasToGroup(story);
+
 }
 
 // NOTE if someone's name contained " shared a " this would report oc from that
@@ -35,7 +49,8 @@ function isSharedPost(story) {
 }
 
 function isOriginalContentPost(story) {
-  return !isGroupPost(story) && !isSharedPost(story);
+  return !isGroupPost(story) && (
+    !isSharedPost(story) || isSharedPostWithText(story));
 }
 
 function getStories() {
@@ -54,6 +69,42 @@ function getStories() {
 // "added X comments on this." / "commented on this." / "replied to a comment" / "was tagged in this"
 // page shares
 
+
+function getStoryText(story) {
+    if  (getStoryText.multiUserContentStories == undefined) {
+      getStoryText.multiUserContentStories = new Set();
+    }
+    let text = "";
+    let userContent = story.getElementsByClassName('userContent');
+    if (userContent.length == 0) {
+      return "";
+    }
+    if (userContent.length > 1) {
+      if (!getStoryText.multiUserContentStories.has(story.id)) {
+        console.log("WARNING Multiple userContent entities, using the first one.");
+        console.log(story);
+        getStoryText.multiUserContentStories.add(story.id);
+      }
+    }
+    for (let p of userContent[0].getElementsByTagName("p")) {
+        text += p.innerText + " ";
+    }
+    return text;
+}
+
+function getStoryWordCount(story) {
+  return getStoryText(story).trim().split(/\s+/).length;
+}
+
+function isLowWordCount(story) {
+  return getStoryWordCount(story) < 2;
+}
+
+function isSharedPostWithText(story) {
+  return isSharedPost(story) && !isLowWordCount(story);
+}
+
+// debugging purposes
 function colorStories() {
   for (let s of getStories()) {
     s.style.borderWidth = "10px";
@@ -61,6 +112,8 @@ function colorStories() {
     try {
       if (isGroupPost(s)) {
           s.style.borderColor = "yellow";
+      } else if (isSharedPostWithText(s)) {
+          s.style.borderColor = "green";
       } else if (isSharedPost(s)) {
           s.style.borderColor = "red";
       } else if (isOriginalContentPost(s)) {
@@ -69,13 +122,14 @@ function colorStories() {
           console.log("error determining story type");
       }
     } catch(err) {
-      console.log("exception trying to traverse story " + s);
+      console.log("exception trying to traverse story");
+      console.log(story);
       console.log(err);
     }
   }
 }
 
-function hideNonOriginalStories() {
+function onlyShowOriginalContent() {
   for (let s of getStories()) {
     try {
       if (!isOriginalContentPost(s)) {
@@ -87,6 +141,32 @@ function hideNonOriginalStories() {
   }
 }
 
+function onlyShowSharesWithText() {
+  for (let s of getStories()) {
+    try {
+      if (!isSharedPostWithText(s)) {
+        s.style.display = "none";
+      }
+    } catch(err) {
+      console.log("exception trying to traverse");
+    }
+  }
+}
+
+function hideGroupsColorStories() {
+  colorStories();
+  for (let s of getStories()) {
+    try {
+      if (isGroupPost(s)) {
+        s.style.display = "none";
+      }
+    } catch(err) {
+      console.log("exception trying to traverse");
+    }
+  }
+}
+
+
 function getNewsFeed() {
   for (let d of document.getElementsByTagName("div")) {
     if (d.id && d.id.startsWith("feed_stream_")) {
@@ -95,7 +175,12 @@ function getNewsFeed() {
   }
 }
 
-var observer = new MutationObserver(hideNonOriginalStories);
-observer.observe(getNewsFeed(), { attributes: false, childList: true, subtree: true });
+//var strategy = hideGroupsColorStories;
+//var strategy = onlyShowSharesWithText;
+//var strategy = colorStories;
+var strategy = onlyShowOriginalContent;
 
-hideNonOriginalStories()
+strategy()
+
+var observer = new MutationObserver(strategy);
+observer.observe(getNewsFeed(), { attributes: false, childList: true, subtree: true });

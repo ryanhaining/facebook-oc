@@ -1,3 +1,5 @@
+"use strict";
+
 function getStoryHeader(story) {
   let headers = story.getElementsByTagName("h5");
   if (headers.length == 0) {

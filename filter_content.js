@@ -70,6 +70,7 @@ function getStories() {
 // ads
 // "added X comments on this." / "commented on this." / "replied to a comment" / "was tagged in this"
 // page shares
+// ${A} and ${B} shared a link
 
 
 function getStoryText(story) {
@@ -168,6 +169,12 @@ function hideGroupsColorStories() {
   }
 }
 
+function showAllStories() {
+  for (let s of getStories()) {
+    s.style.display = "";
+  }
+}
+
 
 function getNewsFeed() {
   for (let d of document.getElementsByTagName("div")) {
@@ -177,12 +184,44 @@ function getNewsFeed() {
   }
 }
 
-//var strategy = hideGroupsColorStories;
-//var strategy = onlyShowSharesWithText;
-//var strategy = colorStories;
-var strategy = onlyShowOriginalContent;
+var gOcMode = true;
 
-strategy()
+function setGlobalOcMode() {
+  chrome.storage.local.get(['ocMode'], function(result) {
+    if (Object.keys(result).length) {
+      gOcMode = result["ocMode"];
+    } else {
+      gOcMode = true;
+    }
+  });
+}
 
-var observer = new MutationObserver(strategy);
-observer.observe(getNewsFeed(), { attributes: false, childList: true, subtree: true });
+function processStories() {
+  if (gOcMode) {
+    onlyShowOriginalContent();
+  }
+}
+
+function main() {
+  setGlobalOcMode();
+  processStories();
+
+  var observer = new MutationObserver(processStories);
+  observer.observe(getNewsFeed(), { attributes: false, childList: true, subtree: true });
+
+
+  chrome.storage.onChanged.addListener(
+    function(changes, namespace) {
+      let ocMode = changes.ocMode;
+      if (ocMode) {
+        gOcMode = ocMode.newValue;
+        processStories();
+        if (!gOcMode) {
+          showAllStories();
+        }
+      }
+    }
+  );
+}
+
+main();

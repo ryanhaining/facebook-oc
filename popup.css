@@ -1,0 +1,23 @@
+body {
+  background-color: #f7f7f7;
+}
+
+#toggle_oc_mode_box {
+  padding: 4px;
+  padding-right: 6px;
+  border-style: solid;
+  border-width: 2px;
+  border-color: #dfe3ee;
+  border-radius: 7px;
+  background-color: white;
+}
+
+#toggle_oc_mode_checkbox_id {
+  vertical-align: middle;
+}
+
+label {
+  vertical-align: middle;
+  font-family: Tahoma,sans-serif;
+  font-size: 10pt;
+}

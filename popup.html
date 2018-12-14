@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <style>
-button {
-  height: 30px;
-  width: 30px;
-  outline: none;
-}
-    </style>
+    <link rel="stylesheet" type="text/css" href="popup.css"/>
   </head>
   <body>
-    <button id="toggleOcMode"></button>
-    <script src="toggle_mode.js"></script>
+    <div id="toggle_oc_mode_box">
+      <nobr>
+      <input type="checkbox" id="toggle_oc_mode_checkbox_id">
+      <label title="only show original content" for="toggle_oc_mode_checkbox_id">OC Only</label>
+      </nobr>
+    </div>
+    <script src="popup.js"></script>
   </body>
 </html>

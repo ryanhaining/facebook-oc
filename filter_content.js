@@ -32,7 +32,7 @@ function headerHasGroupArrow(story) {
   if (is.length != 1) {
     console.log("ERROR: Bad assumption about <i> tag");
   }
-  return is[0].innerText == "to";
+  return true;
 }
 
 function headerTextHasToGroup(story) {

@@ -36,12 +36,12 @@ function headerHasGroupArrow(story) {
 }
 
 function headerTextHasToGroup(story) {
-  return getStoryHeaderText(story).includes(" to the group: ");
+  let headerText = getStoryHeaderText(story);
+  return headerText.includes(" to the group: ") || headerText .includes(" created a poll in ");
 }
 
 function isGroupPost(story) {
   return headerHasGroupArrow(story) || headerTextHasToGroup(story);
-
 }
 
 // NOTE if someone's name contained " shared a " this would report oc from that
@@ -208,7 +208,6 @@ function main() {
 
   var observer = new MutationObserver(processStories);
   observer.observe(getNewsFeed(), { attributes: false, childList: true, subtree: true });
-
 
   chrome.storage.onChanged.addListener(
     function(changes, namespace) {

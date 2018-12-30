@@ -5,7 +5,7 @@
   "content_scripts": [{
     "css": [],
     "js": ["filter_content.js"],
-    "matches": ["https://www.facebook.com/", "https://www.facebook.com/?*"]
+    "matches": ["https://www.facebook.com/"]
   }],
   "permissions": [
     "storage"

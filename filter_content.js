@@ -30,7 +30,7 @@ function headerHasGroupArrow(story) {
     return false;
   }
   if (is.length != 1) {
-    console.log("ERROR: Bad assumption about <i> tag");
+    console.log("ERROR: Bad assumption about <i> tag in story id: " + story.id);
   }
   return true;
 }
@@ -213,8 +213,9 @@ function mutationObserved(mutationList) {
 }
 
 function makeNewStoryMutationObserver(feed) {
-      let m = new MutationObserver(mutationObserved);
-      m.observe(feed, { attributes: false, childList: true, subtree: true });
+  let m = new MutationObserver(mutationObserved);
+  m.observe(feed, { attributes: false, childList: true, subtree: true });
+  return m;
 }
 
 function monitorNewsFeedExists(mutationList, observer) {
@@ -261,10 +262,8 @@ class NewsFeedMonitor extends MutationObserver {
   }
 
   disconnectNewStoryObserver() {
-    if (this.newStoryObserver) {
-      // TODO figure out why this is undefined sometimes
-      this.newStoryObserver.disconnect()
-    }
+    this.newStoryObserver.disconnect()
+    this.newStoryObserver = null;
     this.feed = null;
   }
 

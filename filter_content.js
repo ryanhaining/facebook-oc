@@ -84,8 +84,7 @@ function getStoryText(story) {
     }
     if (userContent.length > 1) {
       if (!getStoryText.multiUserContentStories.has(story.id)) {
-        console.log("WARNING Multiple userContent entities, using the first one.");
-        console.log(story);
+        console.log("WARNING Multiple userContent entities for id " + story.id + ", using the first one.");
         getStoryText.multiUserContentStories.add(story.id);
       }
     }
@@ -187,6 +186,7 @@ function getNewsFeed() {
 var gOcMode = true;
 
 function setGlobalOcMode() {
+  /*
   chrome.storage.local.get(['ocMode'], function(result) {
     if (Object.keys(result).length) {
       gOcMode = result["ocMode"];
@@ -194,6 +194,9 @@ function setGlobalOcMode() {
       gOcMode = true;
     }
   });
+  */
+  // TODO restore
+  gOcMode = true;
 }
 
 function processStories() {
@@ -202,13 +205,70 @@ function processStories() {
   }
 }
 
+function mutationObserved(mutationList) {
+  // can I observer the event that the observed element disappears?
+  // maybe there's another class for that?
+  // if there is, can I retry getting the newsfeed once I've observed that it disappeared
+  processStories();
+}
+
+function feedRemoved(mutationList, feed) {
+  for (let mutation of mutationList) {
+    for (let removed of mutation.removedNodes) {
+      if (removed.contains(feed)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function makeNewStoryMutationObserver(feed) {
+      let m = new MutationObserver(mutationObserved);
+      m.observe(feed, { attributes: false, childList: true, subtree: true });
+}
+
+function monitorNewsFeedExists(mutationList, observer) {
+  if (observer.feed) {
+    if (feedRemoved(mutationList, observer.feed)) {
+      alert("news feed is gone!");
+      if (observer.new_story_observer) {
+        // TODO figure out why this is undefined sometimes
+        observer.new_story_observer.disconnect()
+      }
+      observer.feed = null;
+    }
+  } else {
+    let feed = getNewsFeed();
+    if (feed) {
+      alert("a new feed has appeared!");
+      observer.feed = feed;
+      observer.new_story_observer = makeNewStoryMutationObserver(observer.feed);
+    }
+  }
+}
+
+function makeNewsFeedMonitor() {
+  // If you're on the facebook homepage and navigate away, the content script
+  // stays loaded. When you then go back Home, the MutationObserver watching
+  // the news feed is no longer doing anything useful. I need to detect when
+  // a new news feed has appeared and start monitoring that.
+  let body = document.getElementsByTagName("body")[0];
+  let observer = new MutationObserver(monitorNewsFeedExists);
+  observer.feed = getNewsFeed();
+  observer.new_story_observer = makeNewStoryMutationObserver(observer.feed);
+  observer.observe(body, { attributes: false, childList: true, subtree: true });
+}
+
 function main() {
   setGlobalOcMode();
   processStories();
+  makeNewsFeedMonitor();
 
-  var observer = new MutationObserver(processStories);
-  observer.observe(getNewsFeed(), { attributes: false, childList: true, subtree: true });
+  // TODO == and != to !== and !===
 
+  // TODO restore
+  /*
   chrome.storage.onChanged.addListener(
     function(changes, namespace) {
       let ocMode = changes.ocMode;
@@ -221,6 +281,7 @@ function main() {
       }
     }
   );
+  */
 }
 
 main();

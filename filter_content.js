@@ -2,7 +2,7 @@
 
 function getStoryHeader(story) {
   let headers = story.getElementsByTagName("h5");
-  if (headers.length == 0) {
+  if (headers.length === 0) {
     // I believe this can happen for the "comment on this" stories
     //console.log("WARNING: no headers found for story " + story);
     return null;
@@ -22,14 +22,14 @@ function getStoryHeaderText(story) {
 function headerHasGroupArrow(story) {
   // the arrow is inside an <i>
   let header = getStoryHeader(story)
-  if (header == null) {
+  if (!header) {
     return false;
   }
   let is  = header.getElementsByTagName("i");
-  if (is.length == 0) {
+  if (is.length === 0) {
     return false;
   }
-  if (is.length != 1) {
+  if (is.length !== 1) {
     console.log("ERROR: Bad assumption about <i> tag in story id: " + story.id);
   }
   return true;
@@ -74,12 +74,12 @@ function getStories() {
 
 
 function getStoryText(story) {
-    if  (getStoryText.multiUserContentStories == undefined) {
+    if (!getStoryText.multiUserContentStories) {
       getStoryText.multiUserContentStories = new Set();
     }
     let text = "";
     let userContent = story.getElementsByClassName('userContent');
-    if (userContent.length == 0) {
+    if (userContent.length === 0) {
       return "";
     }
     if (userContent.length > 1) {
@@ -278,8 +278,6 @@ function main() {
   setGlobalOcMode();
   processStories();
   new NewsFeedMonitor();
-
-  // TODO == and != to !== and !===
 
   // TODO restore
   /*

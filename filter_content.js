@@ -221,13 +221,11 @@ function makeNewStoryMutationObserver(feed) {
 function monitorNewsFeedExists(mutationList, observer) {
   if (observer.feed) {
     if (observer.feedRemoved(mutationList)) {
-      alert("news feed is gone!"); // TODO remove
       observer.disconnectNewStoryObserver();
     }
   } else {
     let feed = getNewsFeed();
     if (feed) {
-      alert("a new feed has appeared!"); // TODO remove
       observer.attachNewFeed(feed);
     }
   }

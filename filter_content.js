@@ -212,17 +212,6 @@ function mutationObserved(mutationList) {
   processStories();
 }
 
-function feedRemoved(mutationList, feed) {
-  for (let mutation of mutationList) {
-    for (let removed of mutation.removedNodes) {
-      if (removed.contains(feed)) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
 function makeNewStoryMutationObserver(feed) {
       let m = new MutationObserver(mutationObserved);
       m.observe(feed, { attributes: false, childList: true, subtree: true });
@@ -230,40 +219,66 @@ function makeNewStoryMutationObserver(feed) {
 
 function monitorNewsFeedExists(mutationList, observer) {
   if (observer.feed) {
-    if (feedRemoved(mutationList, observer.feed)) {
-      alert("news feed is gone!");
-      if (observer.new_story_observer) {
-        // TODO figure out why this is undefined sometimes
-        observer.new_story_observer.disconnect()
-      }
-      observer.feed = null;
+    if (observer.feedRemoved(mutationList)) {
+      alert("news feed is gone!"); // TODO remove
+      observer.disconnectNewStoryObserver();
     }
   } else {
     let feed = getNewsFeed();
     if (feed) {
-      alert("a new feed has appeared!");
-      observer.feed = feed;
-      observer.new_story_observer = makeNewStoryMutationObserver(observer.feed);
+      alert("a new feed has appeared!"); // TODO remove
+      observer.attachNewFeed(feed);
     }
   }
 }
 
-function makeNewsFeedMonitor() {
-  // If you're on the facebook homepage and navigate away, the content script
-  // stays loaded. When you then go back Home, the MutationObserver watching
-  // the news feed is no longer doing anything useful. I need to detect when
-  // a new news feed has appeared and start monitoring that.
-  let body = document.getElementsByTagName("body")[0];
-  let observer = new MutationObserver(monitorNewsFeedExists);
-  observer.feed = getNewsFeed();
-  observer.new_story_observer = makeNewStoryMutationObserver(observer.feed);
-  observer.observe(body, { attributes: false, childList: true, subtree: true });
+function getDocumentBody() {
+    return document.getElementsByTagName("body")[0];
 }
+
+
+// If you're on the facebook homepage and navigate away, the content script
+// stays loaded. When you then go back Home, the MutationObserver watching
+// the news feed is no longer doing anything useful. I need to detect when
+// a new news feed has appeared and start monitoring that.
+class NewsFeedMonitor extends MutationObserver {
+  constructor() {
+    super(monitorNewsFeedExists);
+    this.feed = getNewsFeed();
+    this.newStoryObserver = makeNewStoryMutationObserver(this.feed);
+    this.observe(getDocumentBody(), { attributes: false, childList: true, subtree: true });
+  }
+
+  feedRemoved(mutationList) {
+    for (let mutation of mutationList) {
+      for (let removed of mutation.removedNodes) {
+        if (removed.contains(this.feed)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  disconnectNewStoryObserver() {
+    if (this.newStoryObserver) {
+      // TODO figure out why this is undefined sometimes
+      this.newStoryObserver.disconnect()
+    }
+    this.feed = null;
+  }
+
+  attachNewFeed(feed) {
+    this.feed = feed;
+    this.newStoryObserver = makeNewStoryMutationObserver(this.feed);
+  }
+}
+
 
 function main() {
   setGlobalOcMode();
   processStories();
-  makeNewsFeedMonitor();
+  new NewsFeedMonitor();
 
   // TODO == and != to !== and !===
 

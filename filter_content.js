@@ -186,7 +186,6 @@ function getNewsFeed() {
 var gOcMode = true;
 
 function setGlobalOcMode() {
-  /*
   chrome.storage.local.get(['ocMode'], function(result) {
     if (Object.keys(result).length) {
       gOcMode = result["ocMode"];
@@ -194,9 +193,6 @@ function setGlobalOcMode() {
       gOcMode = true;
     }
   });
-  */
-  // TODO restore
-  gOcMode = true;
 }
 
 function processStories() {
@@ -277,8 +273,6 @@ function main() {
   processStories();
   new NewsFeedMonitor();
 
-  // TODO restore
-  /*
   chrome.storage.onChanged.addListener(
     function(changes, namespace) {
       let ocMode = changes.ocMode;
@@ -291,7 +285,6 @@ function main() {
       }
     }
   );
-  */
 }
 
 main();

@@ -99,7 +99,7 @@ function getStoryWordCount(story) {
 }
 
 function isLowWordCount(story) {
-  return getStoryWordCount(story) < 2;
+  return getStoryWordCount(story) < 5;
 }
 
 function isSharedPostWithText(story) {

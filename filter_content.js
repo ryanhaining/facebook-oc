@@ -240,7 +240,7 @@ class NewsFeedMonitor extends MutationObserver {
   constructor() {
     super(monitorNewsFeedExists);
     this.feed = getNewsFeed();
-    this.newStoryObserver = makeNewStoryMutationObserver(this.feed);
+    this.newStoryObserver = this.feed ? makeNewStoryMutationObserver(this.feed) : null;
     this.observe(getDocumentBody(), { attributes: false, childList: true, subtree: true });
   }
 
